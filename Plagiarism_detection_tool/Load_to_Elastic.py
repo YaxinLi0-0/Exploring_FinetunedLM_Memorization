@@ -31,9 +31,9 @@ lst_values = []
 df = pd.read_json(FILE_DIR + FILENAME, orient='split')
 # print(info_data)
 
-USER="elastic"
-PASS="UONQRv12pOvEviXrspEk"
-CERTIFICATE="47bc3704bbaa8b7213842d872338eba22d4eb3d844c078554df1f926d9d200bc"
+USER=""
+PASS=""
+CERTIFICATE=""
 es = Elasticsearch("https://127.0.0.1:9200/", basic_auth=(USER, PASS), ca_certs=CERTIFICATE, verify_certs=False)
 print(es)
 

@@ -1246,9 +1246,9 @@ if __name__ == "__main__":
     # load elastic search
     # with open("elastic.json") as elastic_file:
     #     ELASTIC_SETTINGS = json.loads(elastic_file.read().strip())
-    USER="elastic"
-    PASS="8+aIE24LC8lGuvW=55Q-"
-    CERTIFICATE="4d964df5c9462a42619bf0b873ec2fafa3a87debe193107e29fd8bcb6291a6ac"
+    USER=""
+    PASS=""
+    CERTIFICATE=""
     es = Elasticsearch("https://127.0.0.1:9200/", basic_auth=(USER, PASS), ca_certs=CERTIFICATE, verify_certs=False, max_retries=10, retry_on_timeout=True)
 
 
