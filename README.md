@@ -27,3 +27,7 @@ python Inference_prefix_gpt.py --model-path ./finetuned_dialogue_gptneo_1.3B --t
 
 ## Plagraism Detection 
 Prerequisite: ElasticSearch Engine
+```
+python Load_to_Elastic.py -dir ./pretrained_gpt-neo-125m/ -fn [name_of_prefix].json --index-xsuffix [name_of_suffix]
+python PAN2015_plagiarism_detection2.py -filedir ./memorization_gpt-neo-125m/[name_of_txt].txt -type gpt-neo-125m -dataset [name_of_dataset] --index-xsuffix [name_of_suffix]
+```
