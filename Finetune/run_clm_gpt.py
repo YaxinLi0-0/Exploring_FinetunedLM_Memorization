@@ -18,7 +18,9 @@ Fine-tuning the library models for causal language modeling (GPT, GPT-2, CTRL, .
 Here is the full list of checkpoints on the hub that can be fine-tuned by this script:
 https://huggingface.co/models?filter=causal-lm
 """
+
 # You can also adapt this script on your own causal language modeling task. Pointers for this are left as comments.
+
 import os
 os.environ["CUDA_VISIBLE_DEVICES"]="4,5,6,7"
 import deepspeed
@@ -52,8 +54,6 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
 from transformers.utils import check_min_version
 
-
-# Will error if the minimal version of Transformers is not installed. Remove at your own risks.
 check_min_version("4.5.0.dev0")
 
 logger = logging.getLogger(__name__)
@@ -153,39 +153,27 @@ class DataTrainingArguments:
             "Default to the model max input length for single sentence inputs (take into account special tokens)."
         },
     )
-    overwrite_cache: bool = field(
-        default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
-    )
-    validation_split_percentage: Optional[int] = field(
-        default=5,
-        metadata={
-            "help": "The percentage of the train set used as validation set in case there's no validation split"
-        },
-    )
-    preprocessing_num_workers: Optional[int] = field(
-        default=None,
-        metadata={"help": "The number of processes to use for the preprocessing."},
-    )
 
     def __post_init__(self):
         if self.dataset_name is None and self.train_file is None and self.validation_file is None:
             raise ValueError(
                 "Need either a dataset name or a training/validation file.")
-        else:
-            if self.train_file is not None:
-                extension = self.train_file.split(".")[-1]
-                # assert extension in [
-                #     "csv", "json", "txt"], "`train_file` should be a csv, a json or a txt file."
-            if self.validation_file is not None:
-                extension = self.validation_file.split(".")[-1]
-                # assert extension in [
-                #     "csv", "json", "txt"], "`validation_file` should be a csv, a json or a txt file."
-
-
+            
+def setup_logging(training_args):
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+        datefmt="%m/%d/%Y %H:%M:%S",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
+    logger.setLevel(logging.INFO if is_main_process(training_args.local_rank) else logging.WARN)
+    
+    if is_main_process(training_args.local_rank):
+        transformers.utils.logging.set_verbosity_info()
+        transformers.utils.logging.enable_default_handler()
+        transformers.utils.logging.enable_explicit_format()
+        
 def main():
     # See all possible arguments in src/transformers/training_args.py
-    # or by passing the --help flag to this script.
-    # We now keep distinct sets of args, for a cleaner separation of concerns.
 
     parser = HfArgumentParser(
         (ModelArguments, DataTrainingArguments, TrainingArguments))
@@ -213,29 +201,9 @@ def main():
             )
 
     # Setup logging
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
-        datefmt="%m/%d/%Y %H:%M:%S",
-        handlers=[logging.StreamHandler(sys.stdout)],
-    )
-    logger.setLevel(logging.INFO if is_main_process(
-        training_args.local_rank) else logging.WARN)
-
-    # Log on each process the small summary:
-    logger.warning(
-        f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
-        + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
-    )
-    # Set the verbosity to info of the Transformers logger (on main process only):
-    if is_main_process(training_args.local_rank):
-        transformers.utils.logging.set_verbosity_info()
-        transformers.utils.logging.enable_default_handler()
-        transformers.utils.logging.enable_explicit_format()
-    logger.info("Training/evaluation parameters %s", training_args)
-
+    setup_logging(training_args)
     # Set seed before initializing model.
     set_seed(training_args.seed)
-
 
     train_dataset = load_from_disk(data_args.train_file)
     validation_dataset = load_from_disk(data_args.validation_file)
